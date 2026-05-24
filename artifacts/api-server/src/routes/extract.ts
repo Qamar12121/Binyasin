@@ -181,6 +181,53 @@ router.post("/packages/extract", requireAdmin as any, async (req: AuthRequest, r
   }
 });
 
+// POST /api/tickets/umrah/extract
+router.post("/tickets/umrah/extract", requireAdmin as any, async (req: AuthRequest, res): Promise<void> => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) { res.status(503).json({ error: "OPENAI_API_KEY not configured. Please add it in Secrets." }); return; }
+
+  const { type, content, base64, mimeType } = req.body;
+  if (!type || (type === "text" && !content) || (type === "image" && !base64)) {
+    res.status(400).json({ error: "Missing required fields" }); return;
+  }
+
+  const UMRAH_TICKET_PROMPT = `You are an expert at reading Pakistani Umrah flight ticket brochures and schedules.
+
+Extract ALL Umrah flight tickets from the provided text or image. Return a JSON object with key "tickets" containing an array where each element is one ticket:
+
+{
+  "airline": string,           // e.g. "Saudia", "PIA", "Emirates"
+  "flightNumber": string,      // Outbound flight e.g. "SV 801"
+  "origin": string,            // City name e.g. "Multan", "Lahore"
+  "travelDate": string,        // YYYY-MM-DD
+  "departureTime": string,     // HH:MM 24h e.g. "16:35"
+  "returnDate": string,        // YYYY-MM-DD
+  "returnFlightNumber": string, // e.g. "SV 800"
+  "returnTime": string,        // HH:MM 24h
+  "baggage": string,           // e.g. "23 KG"
+  "mealIncluded": boolean,
+  "seatsAvailable": number,    // integer
+  "price": number              // PKR as integer
+}
+
+Rules:
+- Extract every Umrah flight ticket found
+- Dates: YYYY-MM-DD; assume 2025 or 2026 if year missing
+- Times: 24-hour HH:MM
+- price: plain integer (no PKR/commas)
+- Missing fields: "" for strings, 0 for numbers
+- Return ONLY the JSON object, no markdown`;
+
+  try {
+    const parsed = await callOpenAI(apiKey, UMRAH_TICKET_PROMPT, type, content, base64, mimeType);
+    const tickets: any[] = Array.isArray(parsed) ? parsed : (parsed.tickets || parsed.data || [parsed]);
+    res.json({ tickets });
+  } catch (err: any) {
+    console.error("Umrah ticket extract error:", err);
+    res.status(500).json({ error: err?.message || "Extraction failed" });
+  }
+});
+
 // POST /api/tickets/group/extract
 router.post("/tickets/group/extract", requireAdmin as any, async (req: AuthRequest, res): Promise<void> => {
   const apiKey = process.env.OPENAI_API_KEY;
