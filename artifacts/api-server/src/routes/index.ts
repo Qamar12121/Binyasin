@@ -7,6 +7,7 @@ import packagesRouter from "./packages";
 import bookingsRouter from "./bookings";
 import ledgerRouter from "./ledger";
 import adminRouter from "./admin";
+import extractRouter from "./extract";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(packagesRouter);
 router.use(bookingsRouter);
 router.use(ledgerRouter);
 router.use(adminRouter);
+router.use(extractRouter);
 
 export default router;
