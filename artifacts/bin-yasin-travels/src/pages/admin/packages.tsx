@@ -18,12 +18,23 @@ const schema = z.object({
   tier: z.enum(["economy", "vip", "luxury"]),
   description: z.string().min(1, "Required"),
   hotel: z.string().min(1, "Required"),
+  makkahHotel: z.string().optional(),
+  madinahHotel: z.string().optional(),
   hotelStars: z.number().min(1).max(5),
   transport: z.string().min(1, "Required"),
   duration: z.number().min(1),
   visaIncluded: z.boolean(),
   price: z.number().min(1),
   amenities: z.string(),
+  originCity: z.string().optional(),
+  flightNumber: z.string().optional(),
+  returnFlightNumber: z.string().optional(),
+  travelDate: z.string().optional(),
+  departureTime: z.string().optional(),
+  returnDate: z.string().optional(),
+  returnTime: z.string().optional(),
+  baggage: z.string().optional(),
+  mealIncluded: z.boolean().optional(),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -42,7 +53,7 @@ export default function AdminPackagesPage() {
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", tier: "economy", description: "", hotel: "", hotelStars: 3, transport: "Private Bus", duration: 14, visaIncluded: true, price: 150000, amenities: "" },
+    defaultValues: { name: "", tier: "economy", description: "", hotel: "", makkahHotel: "", madinahHotel: "", hotelStars: 3, transport: "Private Bus", duration: 14, visaIncluded: true, price: 150000, amenities: "", originCity: "", flightNumber: "", returnFlightNumber: "", travelDate: "", departureTime: "", returnDate: "", returnTime: "", baggage: "23 KG", mealIncluded: true },
   });
 
   const qKey = { queryKey: getListUmrahPackagesQueryKey() };
@@ -62,7 +73,7 @@ export default function AdminPackagesPage() {
 
   const handleEdit = (p: any) => {
     setEditingId(p.id);
-    reset({ name: p.name, tier: p.tier, description: p.description, hotel: p.hotel, hotelStars: p.hotelStars, transport: p.transport, duration: p.duration, visaIncluded: p.visaIncluded, price: p.price, amenities: p.amenities?.join(", ") || "" });
+    reset({ name: p.name, tier: p.tier, description: p.description, hotel: p.hotel, makkahHotel: p.makkahHotel || "", madinahHotel: p.madinahHotel || "", hotelStars: p.hotelStars, transport: p.transport, duration: p.duration, visaIncluded: p.visaIncluded, price: p.price, amenities: p.amenities?.join(", ") || "", originCity: p.originCity || "", flightNumber: p.flightNumber || "", returnFlightNumber: p.returnFlightNumber || "", travelDate: p.travelDate || "", departureTime: p.departureTime || "", returnDate: p.returnDate || "", returnTime: p.returnTime || "", baggage: p.baggage || "23 KG", mealIncluded: p.mealIncluded !== false });
     setShowForm(true);
   };
 
@@ -84,6 +95,7 @@ export default function AdminPackagesPage() {
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-xl p-5">
           <h3 className="font-semibold text-foreground mb-4">{editingId ? "Edit Package" : "New Package"}</h3>
           <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 md:grid-cols-4 gap-3">
+
             <div className="col-span-2">
               <label className="text-xs text-muted-foreground mb-1 block">Package Name *</label>
               <Input {...register("name")} placeholder="e.g. Economy Umrah 14 Days" className="h-9" data-testid="input-package-name" />
@@ -99,9 +111,20 @@ export default function AdminPackagesPage() {
               <label className="text-xs text-muted-foreground mb-1 block">Duration (days) *</label>
               <Input {...register("duration", { valueAsNumber: true })} type="number" className="h-9" />
             </div>
+
+            {/* Hotel Details */}
+            <div className="col-span-4"><p className="text-xs font-semibold text-primary uppercase tracking-wide">Hotel Details</p></div>
             <div className="col-span-2">
-              <label className="text-xs text-muted-foreground mb-1 block">Hotel Name *</label>
-              <Input {...register("hotel")} placeholder="Hilton Makkah" className="h-9" data-testid="input-hotel" />
+              <label className="text-xs text-muted-foreground mb-1 block">Makkah Hotel *</label>
+              <Input {...register("makkahHotel")} placeholder="Hilton Makkah Convention" className="h-9" />
+            </div>
+            <div className="col-span-2">
+              <label className="text-xs text-muted-foreground mb-1 block">Madinah Hotel *</label>
+              <Input {...register("madinahHotel")} placeholder="Taj Al Madina Hotel" className="h-9" />
+            </div>
+            <div className="col-span-2">
+              <label className="text-xs text-muted-foreground mb-1 block">Hotel (General / Fallback)</label>
+              <Input {...register("hotel")} placeholder="e.g. 5-Star Makkah Hotel" className="h-9" data-testid="input-hotel" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Hotel Stars *</label>
@@ -111,6 +134,44 @@ export default function AdminPackagesPage() {
               <label className="text-xs text-muted-foreground mb-1 block">Price (PKR) *</label>
               <Input {...register("price", { valueAsNumber: true })} type="number" className="h-9" data-testid="input-package-price" />
             </div>
+
+            {/* Flight Details */}
+            <div className="col-span-4"><p className="text-xs font-semibold text-primary uppercase tracking-wide mt-2">Flight Details</p></div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Origin City</label>
+              <Input {...register("originCity")} placeholder="Multan / Lahore" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Outbound Flight No.</label>
+              <Input {...register("flightNumber")} placeholder="SV 801" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Travel Date</label>
+              <Input {...register("travelDate")} type="date" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Departure Time</label>
+              <Input {...register("departureTime")} placeholder="16:35" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Return Flight No.</label>
+              <Input {...register("returnFlightNumber")} placeholder="SV 800" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Return Date</label>
+              <Input {...register("returnDate")} type="date" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Return Time</label>
+              <Input {...register("returnTime")} placeholder="08:40" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Baggage</label>
+              <Input {...register("baggage")} placeholder="23 KG" className="h-9" />
+            </div>
+
+            {/* Other */}
+            <div className="col-span-4"><p className="text-xs font-semibold text-primary uppercase tracking-wide mt-2">Other Details</p></div>
             <div className="col-span-2">
               <label className="text-xs text-muted-foreground mb-1 block">Transport</label>
               <Input {...register("transport")} placeholder="Private Bus, AC Van..." className="h-9" />
@@ -123,9 +184,13 @@ export default function AdminPackagesPage() {
               <label className="text-xs text-muted-foreground mb-1 block">Description *</label>
               <Textarea {...register("description")} placeholder="Package description..." rows={2} />
             </div>
-            <div className="col-span-2 flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <input {...register("visaIncluded")} type="checkbox" id="visaIncluded" className="w-4 h-4" />
               <label htmlFor="visaIncluded" className="text-sm text-foreground">Visa Included</label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input {...register("mealIncluded")} type="checkbox" id="pkgMeal" className="w-4 h-4" defaultChecked />
+              <label htmlFor="pkgMeal" className="text-sm text-foreground">Meal Included</label>
             </div>
             <div className="col-span-4 flex gap-2">
               <Button type="submit" className="bg-primary text-primary-foreground" disabled={createPkg.isPending} data-testid="button-save-package">
@@ -153,7 +218,9 @@ export default function AdminPackagesPage() {
               </div>
               <p className="text-muted-foreground text-xs mb-3 line-clamp-2">{p.description}</p>
               <div className="space-y-1 text-xs mb-3">
-                <div className="flex justify-between"><span className="text-muted-foreground">Hotel:</span> <span className="text-foreground">{p.hotel} ({"⭐".repeat(p.hotelStars)})</span></div>
+                {(p as any).makkahHotel && <div className="flex justify-between"><span className="text-muted-foreground">Makkah:</span> <span className="text-foreground">{(p as any).makkahHotel}</span></div>}
+                {(p as any).madinahHotel && <div className="flex justify-between"><span className="text-muted-foreground">Madinah:</span> <span className="text-foreground">{(p as any).madinahHotel}</span></div>}
+                {(p as any).flightNumber && <div className="flex justify-between"><span className="text-muted-foreground">Flight:</span> <span className="text-foreground">{(p as any).flightNumber}</span></div>}
                 <div className="flex justify-between"><span className="text-muted-foreground">Duration:</span> <span className="text-foreground">{p.duration} days</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Visa:</span> <span className={p.visaIncluded ? "text-green-400" : "text-red-400"}>{p.visaIncluded ? "Included" : "Not Included"}</span></div>
               </div>

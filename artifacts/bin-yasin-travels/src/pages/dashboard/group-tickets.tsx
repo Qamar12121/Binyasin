@@ -127,7 +127,20 @@ export default function GroupTicketsPage() {
           onClose={() => setBookingTicket(null)}
           type="group"
           ticketId={bookingTicket.id}
-          ticketInfo={{ airline: bookingTicket.airline, origin: bookingTicket.origin, destination: bookingTicket.destination, travelDate: bookingTicket.travelDate, price: bookingTicket.price }}
+          ticketInfo={{
+            airline: bookingTicket.airline,
+            origin: bookingTicket.origin,
+            destination: bookingTicket.destination,
+            travelDate: bookingTicket.travelDate,
+            returnDate: bookingTicket.returnDate,
+            price: bookingTicket.price,
+            flightNumber: bookingTicket.flightNumber,
+            returnFlightNumber: bookingTicket.returnFlightNumber,
+            departureTime: bookingTicket.departureTime,
+            returnTime: bookingTicket.returnTime,
+            baggage: bookingTicket.baggage,
+            mealIncluded: bookingTicket.mealIncluded,
+          }}
         />
       )}
     </div>

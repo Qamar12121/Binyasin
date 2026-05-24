@@ -97,7 +97,23 @@ export default function UmrahPackagesPage() {
 
       {bookingPkg && (
         <BookingModal onClose={() => setBookingPkg(null)} type="package" packageId={bookingPkg.id}
-          ticketInfo={{ name: bookingPkg.name, price: bookingPkg.price }} />
+          ticketInfo={{
+            name: bookingPkg.name,
+            price: bookingPkg.price,
+            makkahHotel: bookingPkg.makkahHotel,
+            madinahHotel: bookingPkg.madinahHotel,
+            flightNumber: bookingPkg.flightNumber,
+            returnFlightNumber: bookingPkg.returnFlightNumber,
+            origin: bookingPkg.originCity,
+            destination: "Jeddah",
+            travelDate: bookingPkg.travelDate,
+            returnDate: bookingPkg.returnDate,
+            departureTime: bookingPkg.departureTime,
+            returnTime: bookingPkg.returnTime,
+            baggage: bookingPkg.baggage,
+            mealIncluded: bookingPkg.mealIncluded,
+            duration: bookingPkg.duration,
+          }} />
       )}
     </div>
   );

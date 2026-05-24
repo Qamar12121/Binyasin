@@ -29,7 +29,311 @@ interface Props {
   type: "group" | "umrah" | "package";
   ticketId?: number;
   packageId?: number;
-  ticketInfo: { airline?: string; origin?: string; destination?: string; travelDate?: string; price?: number; name?: string };
+  ticketInfo: {
+    airline?: string;
+    origin?: string;
+    destination?: string;
+    travelDate?: string;
+    returnDate?: string;
+    price?: number;
+    name?: string;
+    flightNumber?: string;
+    returnFlightNumber?: string;
+    departureTime?: string;
+    returnTime?: string;
+    baggage?: string;
+    mealIncluded?: boolean;
+    makkahHotel?: string;
+    madinahHotel?: string;
+    duration?: number;
+  };
+}
+
+const tdStyle: React.CSSProperties = { padding: "10px 12px", border: "1px solid #ccc" };
+const thStyle: React.CSSProperties = { background: "#00a884", color: "white", padding: "10px 12px", textAlign: "left" };
+const thGrayStyle: React.CSSProperties = { background: "#d9d9d9", color: "#333", padding: "10px 12px", textAlign: "left", border: "1px solid #999" };
+const tdGrayStyle: React.CSSProperties = { padding: "10px 12px", border: "1px solid #999" };
+
+function ETicketPrint({ confirmedBooking, ticketInfo }: { confirmedBooking: any; ticketInfo: Props["ticketInfo"] }) {
+  const pax = confirmedBooking.passengers || [];
+  const hasReturn = !!(ticketInfo.returnDate || confirmedBooking.ticketDetails?.returnDate);
+  const returnDate = ticketInfo.returnDate || confirmedBooking.ticketDetails?.returnDate || "";
+  const flightNumber = ticketInfo.flightNumber || confirmedBooking.ticketDetails?.flightNumber || "";
+  const returnFlightNumber = ticketInfo.returnFlightNumber || confirmedBooking.ticketDetails?.returnFlightNumber || "";
+  const departureTime = ticketInfo.departureTime || confirmedBooking.ticketDetails?.departureTime || "";
+  const returnTime = ticketInfo.returnTime || confirmedBooking.ticketDetails?.returnTime || "";
+  const baggage = ticketInfo.baggage || "23 KG";
+  const meal = ticketInfo.mealIncluded !== false;
+  const origin = ticketInfo.origin || confirmedBooking.ticketDetails?.origin || "";
+  const destination = ticketInfo.destination || confirmedBooking.ticketDetails?.destination || "Jeddah";
+  const travelDate = ticketInfo.travelDate || confirmedBooking.ticketDetails?.travelDate || "";
+
+  return (
+    <div style={{ fontFamily: "Arial, Helvetica, sans-serif", background: "#fff", color: "#333" }}>
+      <style>{`@media print { .no-print { display: none !important; } }`}</style>
+
+      {/* Header */}
+      <div style={{ padding: "18px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #ddd" }}>
+        <div style={{ fontSize: "26px", fontWeight: "bold", color: "#0a8f6a" }}>BIN YASIN TRAVELS</div>
+        <div style={{ fontSize: "20px", fontWeight: "bold", color: "#333" }}>E-Ticket Voucher</div>
+        <button className="no-print" onClick={() => window.print()} style={{ background: "#00b894", color: "#fff", border: "none", padding: "8px 16px", borderRadius: "5px", cursor: "pointer", fontSize: "14px" }}>
+          Print
+        </button>
+      </div>
+
+      {/* Notice */}
+      <div style={{ padding: "12px 20px", color: "#d68910", fontSize: "13px", lineHeight: "22px" }}>
+        🔶 Your booking is Partial Confirmed — Ref: <strong>{confirmedBooking.bookingReference}</strong><br />
+        Thank you for booking with Bin Yasin Travels.
+      </div>
+
+      {/* Passenger Table */}
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            <th style={thStyle}>Passenger Name</th>
+            <th style={thStyle}>Passport No</th>
+            <th style={thStyle}>Date of Birth</th>
+            <th style={thStyle}>Passport Expiry</th>
+            <th style={thStyle}>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pax.map((p: any, i: number) => (
+            <tr key={i}>
+              <td style={tdStyle}>{p.title} {p.givenName} {p.surname}</td>
+              <td style={tdStyle}>{p.passportNumber}</td>
+              <td style={tdStyle}>{p.dateOfBirth}</td>
+              <td style={tdStyle}>{p.dateOfExpiry}</td>
+              <td style={{ ...tdStyle, color: "#008000", fontWeight: "bold" }}>CONFIRMED</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Outbound Flight */}
+      <div style={{ margin: "20px", border: "1px solid #ddd" }}>
+        <div style={{ background: "#00a884", color: "#fff", padding: "10px 14px", fontWeight: "bold" }}>
+          ✈ Departure from {origin} {flightNumber ? `(Flight ${flightNumber})` : ""}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "20px", padding: "18px" }}>
+          <div>
+            <h3 style={{ color: "#222", marginBottom: "8px", fontSize: "15px" }}>Departure</h3>
+            <p style={{ margin: "3px 0", color: "#555" }}>{travelDate}</p>
+            {departureTime && <p style={{ margin: "3px 0", color: "#555" }}>{departureTime}</p>}
+            <p style={{ margin: "3px 0", color: "#555" }}>{origin}</p>
+            <p style={{ margin: "3px 0", color: "#555" }}>Pakistan</p>
+          </div>
+          <div>
+            <h3 style={{ color: "#222", marginBottom: "8px", fontSize: "15px" }}>Arrival</h3>
+            <p style={{ margin: "3px 0", color: "#555" }}>{travelDate}</p>
+            <p style={{ margin: "3px 0", color: "#555" }}>—</p>
+            <p style={{ margin: "3px 0", color: "#555" }}>{destination}</p>
+            <p style={{ margin: "3px 0", color: "#555" }}>Saudi Arabia</p>
+          </div>
+          <div>
+            <h3 style={{ color: "#222", marginBottom: "8px", fontSize: "15px" }}>Details</h3>
+            <p style={{ margin: "3px 0", color: "#555" }}>Economy Class</p>
+            <p style={{ margin: "3px 0", color: "#555" }}>{baggage} Baggage</p>
+            <p style={{ margin: "3px 0", color: "#555" }}>{meal ? "Meal Included" : "No Meal"}</p>
+            <p style={{ margin: "3px 0", color: "#555" }}>Seat Unassigned</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Return Flight */}
+      {hasReturn && (
+        <div style={{ margin: "20px", border: "1px solid #ddd" }}>
+          <div style={{ background: "#00a884", color: "#fff", padding: "10px 14px", fontWeight: "bold" }}>
+            ✈ Return from {destination} {returnFlightNumber ? `(Flight ${returnFlightNumber})` : ""}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "20px", padding: "18px" }}>
+            <div>
+              <h3 style={{ color: "#222", marginBottom: "8px", fontSize: "15px" }}>Departure</h3>
+              <p style={{ margin: "3px 0", color: "#555" }}>{returnDate}</p>
+              {returnTime && <p style={{ margin: "3px 0", color: "#555" }}>{returnTime}</p>}
+              <p style={{ margin: "3px 0", color: "#555" }}>{destination}</p>
+              <p style={{ margin: "3px 0", color: "#555" }}>Saudi Arabia</p>
+            </div>
+            <div>
+              <h3 style={{ color: "#222", marginBottom: "8px", fontSize: "15px" }}>Arrival</h3>
+              <p style={{ margin: "3px 0", color: "#555" }}>{returnDate}</p>
+              <p style={{ margin: "3px 0", color: "#555" }}>—</p>
+              <p style={{ margin: "3px 0", color: "#555" }}>{origin}</p>
+              <p style={{ margin: "3px 0", color: "#555" }}>Pakistan</p>
+            </div>
+            <div>
+              <h3 style={{ color: "#222", marginBottom: "8px", fontSize: "15px" }}>Details</h3>
+              <p style={{ margin: "3px 0", color: "#555" }}>Economy Class</p>
+              <p style={{ margin: "3px 0", color: "#555" }}>{baggage} Baggage</p>
+              <p style={{ margin: "3px 0", color: "#555" }}>{meal ? "Meal Included" : "No Meal"}</p>
+              <p style={{ margin: "3px 0", color: "#555" }}>Seat Unassigned</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div style={{ padding: "16px 20px", borderTop: "1px solid #ddd", textAlign: "center", fontSize: "13px", lineHeight: "24px" }}>
+        <strong>Emergency Contact</strong><br />
+        Agency: BIN YASIN TRAVELS &amp; TOURS &nbsp;|&nbsp; Contact No: 03018780888 &nbsp;|&nbsp; Address: Madni Plaza Near Passport Office New Multan
+      </div>
+    </div>
+  );
+}
+
+function HotelVoucherPrint({ confirmedBooking, ticketInfo }: { confirmedBooking: any; ticketInfo: Props["ticketInfo"] }) {
+  const pax = confirmedBooking.passengers || [];
+  const firstPax = pax[0];
+  const flightNumber = ticketInfo.flightNumber || confirmedBooking.ticketDetails?.flightNumber || "";
+  const returnFlightNumber = ticketInfo.returnFlightNumber || confirmedBooking.ticketDetails?.returnFlightNumber || "";
+  const travelDate = ticketInfo.travelDate || confirmedBooking.ticketDetails?.travelDate || "";
+  const returnDate = ticketInfo.returnDate || confirmedBooking.ticketDetails?.returnDate || "";
+  const departureTime = ticketInfo.departureTime || confirmedBooking.ticketDetails?.departureTime || "";
+  const returnTime = ticketInfo.returnTime || confirmedBooking.ticketDetails?.returnTime || "";
+  const origin = ticketInfo.origin || confirmedBooking.ticketDetails?.origin || "MUX";
+  const destination = ticketInfo.destination || "JED";
+  const baggage = ticketInfo.baggage || "23 KG";
+  const meal = ticketInfo.mealIncluded !== false;
+  const makkahHotel = ticketInfo.makkahHotel || confirmedBooking.ticketDetails?.makkahHotel || "";
+  const madinahHotel = ticketInfo.madinahHotel || confirmedBooking.ticketDetails?.madinahHotel || "";
+
+  return (
+    <div style={{ fontFamily: "Arial, Helvetica, sans-serif", background: "#fff", color: "#333", padding: "20px" }}>
+      <style>{`@media print { .no-print { display: none !important; } }`}</style>
+
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #ddd", paddingBottom: "15px", marginBottom: "20px" }}>
+        <div style={{ fontSize: "28px", fontWeight: "bold", color: "#0b7a75" }}>BIN YASIN TRAVELS</div>
+        <button className="no-print" onClick={() => window.print()} style={{ background: "#008c95", color: "#fff", border: "none", padding: "10px 20px", cursor: "pointer", borderRadius: "4px", fontSize: "14px" }}>
+          Print Voucher
+        </button>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ color: "#b59b3b", fontSize: "32px", fontWeight: "bold" }}>Voucher</div>
+          <div style={{ fontSize: "15px" }}>Status: <span style={{ color: "green", fontWeight: "bold" }}>Confirmed</span></div>
+          <div style={{ fontSize: "14px", color: "#555" }}>#{confirmedBooking.bookingReference}</div>
+        </div>
+      </div>
+
+      {/* Greeting */}
+      <div style={{ lineHeight: "28px", color: "#333", marginBottom: "20px" }}>
+        Dear, {firstPax ? `${firstPax.title} ${firstPax.givenName} ${firstPax.surname}` : "Valued Customer"}<br />
+        Greetings From <strong style={{ color: "#c0392b" }}>Bin Yasin Travels</strong><br />
+        Madni Plaza Near Passport Office New Multan, Punjab Pakistan<br />
+        CELL: +92 3018780888 &nbsp;&nbsp; EMAIL: info@binyasintravels.com
+      </div>
+
+      {/* Passenger Details */}
+      <h2 style={{ fontSize: "20px", color: "#444", margin: "20px 0 10px" }}>Passenger Details</h2>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "20px" }}>
+        <thead>
+          <tr>
+            <th style={thGrayStyle}>Type</th>
+            <th style={thGrayStyle}>Name</th>
+            <th style={thGrayStyle}>Passport No</th>
+            <th style={thGrayStyle}>Date of Birth</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pax.map((p: any, i: number) => (
+            <tr key={i}>
+              <td style={tdGrayStyle}>Adult</td>
+              <td style={tdGrayStyle}>{p.title} {p.givenName} {p.surname}</td>
+              <td style={tdGrayStyle}>{p.passportNumber}</td>
+              <td style={tdGrayStyle}>{p.dateOfBirth}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Flight Details */}
+      {(flightNumber || travelDate) && (
+        <>
+          <h2 style={{ fontSize: "20px", color: "#444", margin: "20px 0 10px" }}>Flight Details</h2>
+          <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "20px" }}>
+            <thead>
+              <tr>
+                <th style={thGrayStyle}>Ref #</th>
+                <th style={thGrayStyle}>Flight</th>
+                <th style={thGrayStyle}>Departure</th>
+                <th style={thGrayStyle}>Sector</th>
+                <th style={thGrayStyle}>Baggage</th>
+                <th style={thGrayStyle}>Meal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {flightNumber && (
+                <tr>
+                  <td style={tdGrayStyle}>{confirmedBooking.bookingReference}</td>
+                  <td style={tdGrayStyle}>{flightNumber}</td>
+                  <td style={tdGrayStyle}>{travelDate}{departureTime ? ` / ${departureTime}` : ""}</td>
+                  <td style={tdGrayStyle}>{origin} — {destination}</td>
+                  <td style={tdGrayStyle}>{baggage}</td>
+                  <td style={tdGrayStyle}>{meal ? "Yes" : "No"}</td>
+                </tr>
+              )}
+              {returnFlightNumber && returnDate && (
+                <tr>
+                  <td style={tdGrayStyle}>{confirmedBooking.bookingReference}</td>
+                  <td style={tdGrayStyle}>{returnFlightNumber}</td>
+                  <td style={tdGrayStyle}>{returnDate}{returnTime ? ` / ${returnTime}` : ""}</td>
+                  <td style={tdGrayStyle}>{destination} — {origin}</td>
+                  <td style={tdGrayStyle}>{baggage}</td>
+                  <td style={tdGrayStyle}>{meal ? "Yes" : "No"}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </>
+      )}
+
+      {/* Hotel Details */}
+      {(makkahHotel || madinahHotel) && (
+        <>
+          <h2 style={{ fontSize: "20px", color: "#444", margin: "20px 0 10px" }}>Hotel Details</h2>
+          <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "20px" }}>
+            <thead>
+              <tr>
+                <th style={thGrayStyle}>City</th>
+                <th style={thGrayStyle}>Hotel</th>
+                <th style={thGrayStyle}>Duration</th>
+              </tr>
+            </thead>
+            <tbody>
+              {makkahHotel && (
+                <tr>
+                  <td style={tdGrayStyle}><strong>MAKKAH</strong></td>
+                  <td style={tdGrayStyle}>{makkahHotel}</td>
+                  <td style={tdGrayStyle}>{ticketInfo.duration ? `${ticketInfo.duration} days` : "—"}</td>
+                </tr>
+              )}
+              {madinahHotel && (
+                <tr>
+                  <td style={tdGrayStyle}><strong>MADINAH</strong></td>
+                  <td style={tdGrayStyle}>{madinahHotel}</td>
+                  <td style={tdGrayStyle}>{ticketInfo.duration ? `${ticketInfo.duration} days` : "—"}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </>
+      )}
+
+      {/* Package Info */}
+      {ticketInfo.name && (
+        <div style={{ background: "#f8f8f8", border: "1px solid #ddd", borderRadius: "6px", padding: "12px 16px", marginBottom: "20px", fontSize: "13px" }}>
+          <strong>Package:</strong> {ticketInfo.name} &nbsp;|&nbsp; <strong>Total:</strong> PKR {confirmedBooking.totalAmount?.toLocaleString()} &nbsp;|&nbsp; <strong>Pax:</strong> {pax.length}
+        </div>
+      )}
+
+      {/* Footer */}
+      <div style={{ marginTop: "30px", borderTop: "1px solid #ddd", paddingTop: "18px", color: "#555", lineHeight: "26px", fontSize: "13px" }}>
+        I, Check all Umrah Services Voucher Details and Agreed _____________________<br /><br />
+        <strong>Booking Notes:</strong> Check your details carefully and inform us immediately if you need any further clarification.<br /><br />
+        <em>Software by Bin Yasin Travels Portal</em>
+      </div>
+    </div>
+  );
 }
 
 export default function BookingModal({ onClose, type, ticketId, packageId, ticketInfo }: Props) {
@@ -59,46 +363,19 @@ export default function BookingModal({ onClose, type, ticketId, packageId, ticke
   };
 
   if (confirmedBooking) {
+    const isPackage = type === "package";
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-        <div className="bg-card border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-          <div id="print-ticket" className="p-6">
-            <div className="flex items-center justify-between mb-6 border-b border-border pb-4">
-              <div>
-                <div className="font-serif text-xl font-bold text-primary">Bin Yasin Travels</div>
-                <div className="text-muted-foreground text-xs">Travel Booking Confirmation</div>
-              </div>
-              <div className="text-right">
-                <div className="text-sm font-bold text-foreground">{confirmedBooking.bookingReference}</div>
-                <div className="text-xs text-muted-foreground">{new Date(confirmedBooking.createdAt).toLocaleDateString()}</div>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
-              <div><span className="text-muted-foreground">Type:</span> <span className="font-medium capitalize text-foreground">{confirmedBooking.type} Booking</span></div>
-              <div><span className="text-muted-foreground">Status:</span> <span className="font-medium text-yellow-400 capitalize">{confirmedBooking.status}</span></div>
-              {confirmedBooking.ticketDetails?.airline && <div><span className="text-muted-foreground">Airline:</span> <span className="font-medium text-foreground">{confirmedBooking.ticketDetails.airline}</span></div>}
-              {confirmedBooking.ticketDetails?.origin && <div><span className="text-muted-foreground">Route:</span> <span className="font-medium text-foreground">{confirmedBooking.ticketDetails.origin}{confirmedBooking.ticketDetails.destination ? ` → ${confirmedBooking.ticketDetails.destination}` : ""}</span></div>}
-              {confirmedBooking.ticketDetails?.travelDate && <div><span className="text-muted-foreground">Date:</span> <span className="font-medium text-foreground">{confirmedBooking.ticketDetails.travelDate}</span></div>}
-              <div><span className="text-muted-foreground">Total:</span> <span className="font-bold text-primary">PKR {confirmedBooking.totalAmount.toLocaleString()}</span></div>
-            </div>
-            <div className="border border-border rounded-lg overflow-hidden">
-              <div className="bg-muted px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Passengers</div>
-              {confirmedBooking.passengers.map((p: any, i: number) => (
-                <div key={i} className="px-4 py-3 border-t border-border grid grid-cols-2 gap-2 text-sm">
-                  <div><span className="text-muted-foreground">Name:</span> <span className="font-medium text-foreground">{p.title} {p.givenName} {p.surname}</span></div>
-                  <div><span className="text-muted-foreground">Passport:</span> <span className="font-medium text-foreground">{p.passportNumber}</span></div>
-                  <div><span className="text-muted-foreground">DOB:</span> <span className="font-medium text-foreground">{p.dateOfBirth}</span></div>
-                  <div><span className="text-muted-foreground">DOE:</span> <span className="font-medium text-foreground">{p.dateOfExpiry}</span></div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 p-3 bg-muted rounded-lg text-xs text-muted-foreground text-center">
-              Bin Yasin Travels • +923018780888 • info@binyasintravels.com
-            </div>
+        <div className="bg-white w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-xl shadow-2xl">
+          <div id="print-ticket">
+            {isPackage
+              ? <HotelVoucherPrint confirmedBooking={confirmedBooking} ticketInfo={ticketInfo} />
+              : <ETicketPrint confirmedBooking={confirmedBooking} ticketInfo={ticketInfo} />
+            }
           </div>
-          <div className="no-print flex gap-3 px-6 pb-6">
-            <Button onClick={() => window.print()} className="flex-1 bg-primary text-primary-foreground" data-testid="button-print-ticket">
-              <Printer className="w-4 h-4 mr-2" />Print Ticket
+          <div className="no-print flex gap-3 px-6 pb-6 pt-4 border-t border-gray-200 bg-white">
+            <Button onClick={() => window.print()} className="flex-1 bg-teal-600 hover:bg-teal-700 text-white" data-testid="button-print-ticket">
+              <Printer className="w-4 h-4 mr-2" />Print {isPackage ? "Voucher" : "E-Ticket"}
             </Button>
             <Button variant="outline" onClick={onClose} className="flex-1" data-testid="button-close-confirmation">Close</Button>
           </div>

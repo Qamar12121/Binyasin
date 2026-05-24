@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer, real, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, real, pgEnum, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -13,6 +13,12 @@ export const groupTicketsTable = pgTable("group_tickets", {
   destination: text("destination").notNull(),
   country: text("country").notNull(),
   travelDate: text("travel_date").notNull(),
+  departureTime: text("departure_time"),
+  returnDate: text("return_date"),
+  returnFlightNumber: text("return_flight_number"),
+  returnTime: text("return_time"),
+  baggage: text("baggage"),
+  mealIncluded: boolean("meal_included").default(true),
   seatsAvailable: integer("seats_available").notNull(),
   price: real("price").notNull(),
   currency: text("currency").notNull().default("PKR"),
@@ -29,7 +35,12 @@ export const umrahTicketsTable = pgTable("umrah_tickets", {
   airlineLogo: text("airline_logo"),
   origin: text("origin").notNull(),
   travelDate: text("travel_date").notNull(),
+  departureTime: text("departure_time"),
   returnDate: text("return_date").notNull(),
+  returnTime: text("return_time"),
+  returnFlightNumber: text("return_flight_number"),
+  baggage: text("baggage"),
+  mealIncluded: boolean("meal_included").default(true),
   seatsAvailable: integer("seats_available").notNull(),
   price: real("price").notNull(),
   currency: text("currency").notNull().default("PKR"),

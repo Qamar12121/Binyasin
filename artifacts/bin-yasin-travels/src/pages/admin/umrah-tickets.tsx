@@ -15,7 +15,12 @@ const schema = z.object({
   flightNumber: z.string().optional(),
   origin: z.string().min(1, "Required"),
   travelDate: z.string().min(1, "Required"),
+  departureTime: z.string().optional(),
   returnDate: z.string().min(1, "Required"),
+  returnFlightNumber: z.string().optional(),
+  returnTime: z.string().optional(),
+  baggage: z.string().optional(),
+  mealIncluded: z.boolean().optional(),
   seatsAvailable: z.number().min(1),
   price: z.number().min(1),
 });
@@ -35,7 +40,7 @@ export default function AdminUmrahTicketsPage() {
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { airline: "", flightNumber: "", origin: "", travelDate: "", returnDate: "", seatsAvailable: 30, price: 80000 },
+    defaultValues: { airline: "", flightNumber: "", origin: "", travelDate: "", departureTime: "", returnDate: "", returnFlightNumber: "", returnTime: "", baggage: "23 KG", mealIncluded: true, seatsAvailable: 30, price: 80000 },
   });
 
   const onSubmit = (data: FormData) => {
@@ -53,7 +58,7 @@ export default function AdminUmrahTicketsPage() {
 
   const handleEdit = (t: any) => {
     setEditingId(t.id);
-    reset({ airline: t.airline, flightNumber: t.flightNumber || "", origin: t.origin, travelDate: t.travelDate, returnDate: t.returnDate || "", seatsAvailable: t.seatsAvailable, price: t.price });
+    reset({ airline: t.airline, flightNumber: t.flightNumber || "", origin: t.origin, travelDate: t.travelDate, departureTime: t.departureTime || "", returnDate: t.returnDate || "", returnFlightNumber: t.returnFlightNumber || "", returnTime: t.returnTime || "", baggage: t.baggage || "23 KG", mealIncluded: t.mealIncluded !== false, seatsAvailable: t.seatsAvailable, price: t.price });
     setShowForm(true);
   };
 
@@ -75,23 +80,41 @@ export default function AdminUmrahTicketsPage() {
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-xl p-5">
           <h3 className="font-semibold text-foreground mb-4">{editingId ? "Edit Umrah Ticket" : "New Umrah Ticket"}</h3>
           <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { label: "Airline *", key: "airline", placeholder: "PIA, Saudia..." },
-              { label: "Flight No.", key: "flightNumber", placeholder: "PK-730" },
-              { label: "Origin City *", key: "origin", placeholder: "Lahore" },
-            ].map(f => (
-              <div key={f.key}>
-                <label className="text-xs text-muted-foreground mb-1 block">{f.label}</label>
-                <Input {...register(f.key as any)} placeholder={f.placeholder} className="h-9" data-testid={`input-${f.key}`} />
-              </div>
-            ))}
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Airline *</label>
+              <Input {...register("airline")} placeholder="PIA, Saudia..." className="h-9" data-testid="input-airline" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Flight No. (Outbound)</label>
+              <Input {...register("flightNumber")} placeholder="SV 801" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Origin City *</label>
+              <Input {...register("origin")} placeholder="Multan" className="h-9" data-testid="input-origin" />
+            </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Depart Date *</label>
               <Input {...register("travelDate")} type="date" className="h-9" />
             </div>
             <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Departure Time</label>
+              <Input {...register("departureTime")} placeholder="16:35" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Return Flight No.</label>
+              <Input {...register("returnFlightNumber")} placeholder="SV 800" className="h-9" />
+            </div>
+            <div>
               <label className="text-xs text-muted-foreground mb-1 block">Return Date *</label>
               <Input {...register("returnDate")} type="date" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Return Time</label>
+              <Input {...register("returnTime")} placeholder="08:40" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Baggage</label>
+              <Input {...register("baggage")} placeholder="23 KG" className="h-9" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Seats *</label>
@@ -100,6 +123,10 @@ export default function AdminUmrahTicketsPage() {
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Price (PKR) *</label>
               <Input {...register("price", { valueAsNumber: true })} type="number" className="h-9" />
+            </div>
+            <div className="flex items-center gap-2">
+              <input {...register("mealIncluded")} type="checkbox" id="umrahMeal" className="w-4 h-4" defaultChecked />
+              <label htmlFor="umrahMeal" className="text-sm text-foreground">Meal Included</label>
             </div>
             <div className="col-span-2 md:col-span-4 flex gap-2">
               <Button type="submit" className="bg-primary text-primary-foreground" disabled={createTicket.isPending} data-testid="button-save-umrah-ticket">
@@ -118,7 +145,7 @@ export default function AdminUmrahTicketsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border bg-muted/50">
-                {["Airline", "Origin", "Depart", "Return", "Seats", "Price", "Status", ""].map(h => (
+                {["Airline", "Flight No", "Origin", "Depart", "Time", "Return", "Baggage", "Meal", "Seats", "Price", "Status", ""].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">{h}</th>
                 ))}
               </tr></thead>
@@ -126,9 +153,13 @@ export default function AdminUmrahTicketsPage() {
                 {tickets.map(t => (
                   <tr key={t.id} className="hover:bg-muted/30" data-testid={`umrah-admin-row-${t.id}`}>
                     <td className="px-4 py-3 font-medium text-foreground">{t.airline}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs">{t.flightNumber || "—"}</td>
                     <td className="px-4 py-3 text-foreground">{t.origin}</td>
                     <td className="px-4 py-3 text-muted-foreground text-xs">{t.travelDate}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs">{(t as any).departureTime || "—"}</td>
                     <td className="px-4 py-3 text-muted-foreground text-xs">{t.returnDate}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs">{(t as any).baggage || "—"}</td>
+                    <td className="px-4 py-3 text-xs">{(t as any).mealIncluded !== false ? <span className="text-green-400">Yes</span> : <span className="text-red-400">No</span>}</td>
                     <td className="px-4 py-3 text-foreground">{t.seatsAvailable}</td>
                     <td className="px-4 py-3 font-semibold text-primary whitespace-nowrap">PKR {t.price.toLocaleString()}</td>
                     <td className="px-4 py-3"><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${statusColors[t.status]}`}>{t.status}</span></td>

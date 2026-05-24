@@ -48,10 +48,15 @@ export default function HomePage() {
       {/* Hero */}
       <section className="relative min-h-screen flex items-center overflow-hidden bg-secondary">
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-secondary via-secondary/95 to-primary/20" />
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/20201008_Makkah_Masjid_al-Haram.jpg/1280px-20201008_Makkah_Masjid_al-Haram.jpg"
+            alt="Masjid Al Haram Kaaba"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+            style={{ filter: "brightness(0.35)" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-secondary/80 via-secondary/60 to-transparent" />
           <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
-          <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "40px 40px" }} />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">

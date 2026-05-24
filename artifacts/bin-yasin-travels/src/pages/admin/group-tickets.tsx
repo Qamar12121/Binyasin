@@ -20,12 +20,18 @@ const schema = z.object({
   country: z.string().min(1, "Required"),
   category: z.enum(["KSA", "UAE", "Qatar"]),
   travelDate: z.string().min(1, "Required"),
+  departureTime: z.string().optional(),
+  returnDate: z.string().optional(),
+  returnFlightNumber: z.string().optional(),
+  returnTime: z.string().optional(),
+  baggage: z.string().optional(),
+  mealIncluded: z.boolean().optional(),
   seatsAvailable: z.number().min(1, "Required"),
   price: z.number().min(1, "Required"),
 });
 type FormData = z.infer<typeof schema>;
 
-const defaultValues: FormData = { airline: "", flightNumber: "", origin: "", destination: "", country: "Saudi Arabia", category: "KSA", travelDate: "", seatsAvailable: 30, price: 50000 };
+const defaultValues: FormData = { airline: "", flightNumber: "", origin: "", destination: "", country: "Saudi Arabia", category: "KSA", travelDate: "", departureTime: "", returnDate: "", returnFlightNumber: "", returnTime: "", baggage: "23 KG", mealIncluded: true, seatsAvailable: 30, price: 50000 };
 
 export default function AdminGroupTicketsPage() {
   const [showForm, setShowForm] = useState(false);
@@ -37,7 +43,7 @@ export default function AdminGroupTicketsPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues,
   });
@@ -56,7 +62,7 @@ export default function AdminGroupTicketsPage() {
 
   const handleEdit = (t: any) => {
     setEditingId(t.id);
-    reset({ airline: t.airline, flightNumber: t.flightNumber || "", origin: t.origin, destination: t.destination, country: t.country, category: t.category, travelDate: t.travelDate, seatsAvailable: t.seatsAvailable, price: t.price });
+    reset({ airline: t.airline, flightNumber: t.flightNumber || "", origin: t.origin, destination: t.destination, country: t.country, category: t.category, travelDate: t.travelDate, departureTime: t.departureTime || "", returnDate: t.returnDate || "", returnFlightNumber: t.returnFlightNumber || "", returnTime: t.returnTime || "", baggage: t.baggage || "23 KG", mealIncluded: t.mealIncluded !== false, seatsAvailable: t.seatsAvailable, price: t.price });
     setShowForm(true);
   };
 
@@ -92,7 +98,7 @@ export default function AdminGroupTicketsPage() {
               {errors.airline && <p className="text-red-400 text-xs">{errors.airline.message}</p>}
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Flight No.</label>
+              <label className="text-xs text-muted-foreground mb-1 block">Flight No. (Outbound)</label>
               <Input {...register("flightNumber")} placeholder="PK-526" className="h-9" />
             </div>
             <div>
@@ -102,6 +108,30 @@ export default function AdminGroupTicketsPage() {
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Destination *</label>
               <Input {...register("destination")} placeholder="Jeddah" className="h-9" data-testid="input-destination" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Travel Date *</label>
+              <Input {...register("travelDate")} type="date" className="h-9" data-testid="input-travel-date" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Departure Time</label>
+              <Input {...register("departureTime")} placeholder="16:35" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Return Flight No.</label>
+              <Input {...register("returnFlightNumber")} placeholder="PK-527" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Return Date</label>
+              <Input {...register("returnDate")} type="date" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Return Time</label>
+              <Input {...register("returnTime")} placeholder="08:40" className="h-9" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Baggage</label>
+              <Input {...register("baggage")} placeholder="23 KG" className="h-9" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Category *</label>
@@ -119,16 +149,16 @@ export default function AdminGroupTicketsPage() {
               <Input {...register("country")} placeholder="Saudi Arabia" className="h-9" />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Travel Date *</label>
-              <Input {...register("travelDate")} type="date" className="h-9" data-testid="input-travel-date" />
-            </div>
-            <div>
               <label className="text-xs text-muted-foreground mb-1 block">Seats *</label>
               <Input {...register("seatsAvailable", { valueAsNumber: true })} type="number" className="h-9" data-testid="input-seats" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Price (PKR) *</label>
               <Input {...register("price", { valueAsNumber: true })} type="number" className="h-9" data-testid="input-price" />
+            </div>
+            <div className="flex items-center gap-2 col-span-2">
+              <input {...register("mealIncluded")} type="checkbox" id="mealIncluded" className="w-4 h-4" defaultChecked />
+              <label htmlFor="mealIncluded" className="text-sm text-foreground">Meal Included</label>
             </div>
             <div className="col-span-2 md:col-span-4 flex gap-2">
               <Button type="submit" className="bg-primary text-primary-foreground" disabled={createTicket.isPending || updateTicket.isPending} data-testid="button-save-ticket">
@@ -149,7 +179,7 @@ export default function AdminGroupTicketsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border bg-muted/50">
-                {["Airline", "Route", "Category", "Date", "Seats", "Price", "Status", ""].map(h => (
+                {["Airline", "Flight", "Route", "Category", "Date", "Time", "Return", "Baggage", "Seats", "Price", "Status", ""].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr></thead>
@@ -157,9 +187,13 @@ export default function AdminGroupTicketsPage() {
                 {tickets.map(t => (
                   <tr key={t.id} className="hover:bg-muted/30" data-testid={`admin-ticket-row-${t.id}`}>
                     <td className="px-4 py-3 font-medium text-foreground">{t.airline}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs">{t.flightNumber || "—"}</td>
                     <td className="px-4 py-3 text-foreground text-xs">{t.origin} → {t.destination}</td>
                     <td className="px-4 py-3"><Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">{t.category}</Badge></td>
                     <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">{t.travelDate}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs">{(t as any).departureTime || "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">{(t as any).returnDate || "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs">{(t as any).baggage || "—"}</td>
                     <td className="px-4 py-3 text-foreground">{t.seatsAvailable}</td>
                     <td className="px-4 py-3 font-semibold text-primary whitespace-nowrap">PKR {t.price.toLocaleString()}</td>
                     <td className="px-4 py-3"><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${statusColors[t.status]}`}>{t.status}</span></td>
