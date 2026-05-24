@@ -12,8 +12,22 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 
+const AIRLINE_OPTIONS = [
+  { name: "PIA (Pakistan Int'l)", logo: "https://www.gstatic.com/flights/airline_logos/70px/PK.png" },
+  { name: "Airblue", logo: "https://www.gstatic.com/flights/airline_logos/70px/ED.png" },
+  { name: "FlyJinnah", logo: "https://www.gstatic.com/flights/airline_logos/70px/9P.png" },
+  { name: "SereneAir", logo: "https://www.gstatic.com/flights/airline_logos/70px/ER.png" },
+  { name: "AirSial", logo: "https://www.gstatic.com/flights/airline_logos/70px/PF.png" },
+  { name: "Qatar Airways", logo: "https://www.gstatic.com/flights/airline_logos/70px/QR.png" },
+  { name: "Emirates", logo: "https://www.gstatic.com/flights/airline_logos/70px/EK.png" },
+  { name: "Saudi Airlines", logo: "https://www.gstatic.com/flights/airline_logos/70px/SV.png" },
+  { name: "Flydubai", logo: "https://www.gstatic.com/flights/airline_logos/70px/FZ.png" },
+  { name: "Air Arabia", logo: "https://www.gstatic.com/flights/airline_logos/70px/G9.png" },
+];
+
 const schema = z.object({
   airline: z.string().min(1, "Required"),
+  airlineLogo: z.string().optional(),
   flightNumber: z.string().optional(),
   origin: z.string().min(1, "Required"),
   originCode: z.string().optional(),
@@ -37,7 +51,7 @@ const schema = z.object({
 });
 type FormData = z.infer<typeof schema>;
 
-const defaultValues: FormData = { airline: "", flightNumber: "", origin: "", originCode: "", destination: "", destinationCode: "", country: "Saudi Arabia", category: "KSA", travelDate: "", departureTime: "", arrivalTime: "", returnDate: "", returnFlightNumber: "", returnTime: "", returnArrivalTime: "", baggage: "23 KG", mealIncluded: true, seatsAvailable: 30, totalSeats: 30, referenceCode: "", price: 50000 };
+const defaultValues: FormData = { airline: "", airlineLogo: "", flightNumber: "", origin: "", originCode: "", destination: "", destinationCode: "", country: "Saudi Arabia", category: "KSA", travelDate: "", departureTime: "", arrivalTime: "", returnDate: "", returnFlightNumber: "", returnTime: "", returnArrivalTime: "", baggage: "23 KG", mealIncluded: true, seatsAvailable: 30, totalSeats: 30, referenceCode: "", price: 50000 };
 
 export default function AdminGroupTicketsPage() {
   const [showForm, setShowForm] = useState(false);
@@ -72,7 +86,8 @@ export default function AdminGroupTicketsPage() {
 
   const handleEdit = (t: any) => {
     setEditingId(t.id);
-    reset({ airline: t.airline, flightNumber: t.flightNumber || "", origin: t.origin, originCode: t.originCode || "", destination: t.destination, destinationCode: t.destinationCode || "", country: t.country, category: t.category, travelDate: t.travelDate, departureTime: t.departureTime || "", arrivalTime: t.arrivalTime || "", returnDate: t.returnDate || "", returnFlightNumber: t.returnFlightNumber || "", returnTime: t.returnTime || "", returnArrivalTime: t.returnArrivalTime || "", baggage: t.baggage || "23 KG", mealIncluded: t.mealIncluded !== false, seatsAvailable: t.seatsAvailable, totalSeats: t.totalSeats || t.seatsAvailable, referenceCode: t.referenceCode || "", price: t.price });
+    const airlineOption = AIRLINE_OPTIONS.find(a => a.name === t.airline);
+    reset({ airline: t.airline, airlineLogo: t.airlineLogo || airlineOption?.logo || "", flightNumber: t.flightNumber || "", origin: t.origin, originCode: t.originCode || "", destination: t.destination, destinationCode: t.destinationCode || "", country: t.country, category: t.category, travelDate: t.travelDate, departureTime: t.departureTime || "", arrivalTime: t.arrivalTime || "", returnDate: t.returnDate || "", returnFlightNumber: t.returnFlightNumber || "", returnTime: t.returnTime || "", returnArrivalTime: t.returnArrivalTime || "", baggage: t.baggage || "23 KG", mealIncluded: t.mealIncluded !== false, seatsAvailable: t.seatsAvailable, totalSeats: t.totalSeats || t.seatsAvailable, referenceCode: t.referenceCode || "", price: t.price });
     setShowForm(true);
   };
 
@@ -104,7 +119,25 @@ export default function AdminGroupTicketsPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Airline *</label>
-                <Input {...register("airline")} placeholder="Airblue, PIA..." className="h-9" data-testid="input-airline" />
+                <Select onValueChange={v => {
+                  const option = AIRLINE_OPTIONS.find(a => a.name === v);
+                  setValue("airline", v);
+                  setValue("airlineLogo", option?.logo || "");
+                }}>
+                  <SelectTrigger className="h-9" data-testid="input-airline">
+                    <SelectValue placeholder="Select airline..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AIRLINE_OPTIONS.map(a => (
+                      <SelectItem key={a.name} value={a.name}>
+                        <div className="flex items-center gap-2">
+                          <img src={a.logo} alt={a.name} className="w-5 h-5 object-contain" />
+                          <span>{a.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {errors.airline && <p className="text-red-400 text-xs">{errors.airline.message}</p>}
               </div>
               <div>
@@ -238,7 +271,14 @@ export default function AdminGroupTicketsPage() {
               <tbody className="divide-y divide-border">
                 {tickets.map((t: any) => (
                   <tr key={t.id} className="hover:bg-muted/30" data-testid={`admin-ticket-row-${t.id}`}>
-                    <td className="px-3 py-3 font-medium text-foreground whitespace-nowrap">{t.airline}</td>
+                    <td className="px-3 py-3 font-medium text-foreground whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        {(t.airlineLogo || AIRLINE_OPTIONS.find(a => a.name === t.airline)?.logo) && (
+                          <img src={t.airlineLogo || AIRLINE_OPTIONS.find(a => a.name === t.airline)?.logo} alt={t.airline} className="w-6 h-6 object-contain rounded" />
+                        )}
+                        {t.airline}
+                      </div>
+                    </td>
                     <td className="px-3 py-3 text-muted-foreground text-xs">{t.referenceCode || "—"}</td>
                     <td className="px-3 py-3 text-foreground text-xs whitespace-nowrap">{t.originCode || t.origin} → {t.destinationCode || t.destination}</td>
                     <td className="px-3 py-3"><Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">{t.category}</Badge></td>
