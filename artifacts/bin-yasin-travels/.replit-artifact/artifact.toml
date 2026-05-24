@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Bin Yasin Travels"
+version = "1.0.0"
+id = "artifacts/bin-yasin-travels"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20125
+
+[services.development]
+run = "pnpm --filter @workspace/bin-yasin-travels run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/bin-yasin-travels", "run", "build" ]
+publicDir = "artifacts/bin-yasin-travels/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20125"
+BASE_PATH = "/"

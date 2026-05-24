@@ -1,22 +1,37 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Bin Yasin Travels API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: tickets
+    description: Group and Umrah tickets
+  - name: packages
+    description: Umrah packages
+  - name: bookings
+    description: Booking management
+  - name: ledger
+    description: Account ledger
+  - name: agents
+    description: Agent management
+  - name: admin
+    description: Admin operations
+  - name: profile
+    description: User profile
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +39,635 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/forgot-password:
+    post:
+      operationId: forgotPassword
+      tags: [auth]
+      summary: Forgot password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordInput"
+      responses:
+        "200":
+          description: Reset email sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/change-password:
+    post:
+      operationId: changePassword
+      tags: [auth]
+      summary: Change password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordInput"
+      responses:
+        "200":
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /profile:
+    get:
+      operationId: getProfile
+      tags: [profile]
+      summary: Get agent profile
+      responses:
+        "200":
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateProfile
+      tags: [profile]
+      summary: Update agent profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /tickets/group:
+    get:
+      operationId: listGroupTickets
+      tags: [tickets]
+      summary: List group tickets
+      parameters:
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: airline
+          in: query
+          schema:
+            type: string
+        - name: date
+          in: query
+          schema:
+            type: string
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: List of group tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GroupTicket"
+    post:
+      operationId: createGroupTicket
+      tags: [tickets]
+      summary: Create group ticket (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GroupTicketInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupTicket"
+
+  /tickets/group/{id}:
+    get:
+      operationId: getGroupTicket
+      tags: [tickets]
+      summary: Get group ticket by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Group ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupTicket"
+    patch:
+      operationId: updateGroupTicket
+      tags: [tickets]
+      summary: Update group ticket (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GroupTicketUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupTicket"
+    delete:
+      operationId: deleteGroupTicket
+      tags: [tickets]
+      summary: Delete group ticket (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /tickets/umrah:
+    get:
+      operationId: listUmrahTickets
+      tags: [tickets]
+      summary: List Umrah tickets
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UmrahTicket"
+    post:
+      operationId: createUmrahTicket
+      tags: [tickets]
+      summary: Create Umrah ticket (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UmrahTicketInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UmrahTicket"
+
+  /tickets/umrah/{id}:
+    patch:
+      operationId: updateUmrahTicket
+      tags: [tickets]
+      summary: Update Umrah ticket (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UmrahTicketInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UmrahTicket"
+    delete:
+      operationId: deleteUmrahTicket
+      tags: [tickets]
+      summary: Delete Umrah ticket (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /packages/umrah:
+    get:
+      operationId: listUmrahPackages
+      tags: [packages]
+      summary: List Umrah packages
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UmrahPackage"
+    post:
+      operationId: createUmrahPackage
+      tags: [packages]
+      summary: Create Umrah package (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UmrahPackageInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UmrahPackage"
+
+  /packages/umrah/{id}:
+    patch:
+      operationId: updateUmrahPackage
+      tags: [packages]
+      summary: Update Umrah package (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UmrahPackageInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UmrahPackage"
+    delete:
+      operationId: deleteUmrahPackage
+      tags: [packages]
+      summary: Delete Umrah package (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /bookings:
+    get:
+      operationId: listBookings
+      tags: [bookings]
+      summary: List bookings for current agent
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [group, umrah, package]
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bookings list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Create a booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /bookings/{id}:
+    get:
+      operationId: getBooking
+      tags: [bookings]
+      summary: Get booking by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+    patch:
+      operationId: updateBookingStatus
+      tags: [bookings]
+      summary: Update booking status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingStatusUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /ledger:
+    get:
+      operationId: getLedger
+      tags: [ledger]
+      summary: Get ledger/account transactions for current agent
+      responses:
+        "200":
+          description: Ledger
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LedgerSummary"
+
+  /ledger/transactions:
+    get:
+      operationId: listTransactions
+      tags: [ledger]
+      summary: List transactions
+      responses:
+        "200":
+          description: Transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+
+  /admin/dashboard:
+    get:
+      operationId: getAdminDashboard
+      tags: [admin]
+      summary: Admin dashboard analytics
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminDashboard"
+
+  /admin/agents:
+    get:
+      operationId: listAgents
+      tags: [admin]
+      summary: List all agents
+      responses:
+        "200":
+          description: Agents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /admin/agents/{id}/approve:
+    patch:
+      operationId: approveAgent
+      tags: [admin]
+      summary: Approve or reject agent
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApprovalInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /admin/bookings:
+    get:
+      operationId: listAllBookings
+      tags: [admin]
+      summary: List all bookings (admin)
+      responses:
+        "200":
+          description: All bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+
+  /admin/bookings/{id}:
+    patch:
+      operationId: adminUpdateBookingStatus
+      tags: [admin]
+      summary: Approve or reject a booking (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingStatusUpdate"
+      responses:
+        "200":
+          description: Updated booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /admin/transactions:
+    get:
+      operationId: listAllTransactions
+      tags: [admin]
+      summary: List all transactions (admin)
+      responses:
+        "200":
+          description: All transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+    post:
+      operationId: createTransaction
+      tags: [admin]
+      summary: Create a manual transaction (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +675,496 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required: [token, user]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        agencyName:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        cellNumber:
+          type: string
+        city:
+          type: string
+        role:
+          type: string
+          enum: [admin, agent]
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        profileImage:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required: [id, agencyName, fullName, email, cellNumber, city, role, status, createdAt]
+
+    RegisterInput:
+      type: object
+      properties:
+        agencyName:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        cellNumber:
+          type: string
+        city:
+          type: string
+        password:
+          type: string
+        confirmPassword:
+          type: string
+      required: [agencyName, fullName, email, cellNumber, city, password, confirmPassword]
+
+    LoginInput:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        rememberMe:
+          type: boolean
+      required: [email, password]
+
+    ForgotPasswordInput:
+      type: object
+      properties:
+        email:
+          type: string
+      required: [email]
+
+    ChangePasswordInput:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+        confirmPassword:
+          type: string
+      required: [currentPassword, newPassword, confirmPassword]
+
+    ProfileUpdate:
+      type: object
+      properties:
+        agencyName:
+          type: string
+        fullName:
+          type: string
+        cellNumber:
+          type: string
+        city:
+          type: string
+        profileImage:
+          type: string
+
+    GroupTicket:
+      type: object
+      properties:
+        id:
+          type: integer
+        airline:
+          type: string
+        airlineLogo:
+          type: string
+        origin:
+          type: string
+        destination:
+          type: string
+        country:
+          type: string
+        travelDate:
+          type: string
+        seatsAvailable:
+          type: integer
+        price:
+          type: number
+        currency:
+          type: string
+        flightNumber:
+          type: string
+        category:
+          type: string
+          enum: [KSA, UAE, Qatar]
+        status:
+          type: string
+          enum: [active, soldout, cancelled]
+        createdAt:
+          type: string
+      required: [id, airline, origin, destination, country, travelDate, seatsAvailable, price, currency, category, status, createdAt]
+
+    GroupTicketInput:
+      type: object
+      properties:
+        airline:
+          type: string
+        airlineLogo:
+          type: string
+        origin:
+          type: string
+        destination:
+          type: string
+        country:
+          type: string
+        travelDate:
+          type: string
+        seatsAvailable:
+          type: integer
+        price:
+          type: number
+        currency:
+          type: string
+        flightNumber:
+          type: string
+        category:
+          type: string
+          enum: [KSA, UAE, Qatar]
+      required: [airline, origin, destination, country, travelDate, seatsAvailable, price, currency, category]
+
+    GroupTicketUpdate:
+      type: object
+      properties:
+        seatsAvailable:
+          type: integer
+        price:
+          type: number
+        status:
+          type: string
+          enum: [active, soldout, cancelled]
+
+    UmrahTicket:
+      type: object
+      properties:
+        id:
+          type: integer
+        airline:
+          type: string
+        airlineLogo:
+          type: string
+        origin:
+          type: string
+        travelDate:
+          type: string
+        returnDate:
+          type: string
+        seatsAvailable:
+          type: integer
+        price:
+          type: number
+        currency:
+          type: string
+        flightNumber:
+          type: string
+        status:
+          type: string
+          enum: [active, soldout, cancelled]
+        createdAt:
+          type: string
+      required: [id, airline, origin, travelDate, returnDate, seatsAvailable, price, currency, status, createdAt]
+
+    UmrahTicketInput:
+      type: object
+      properties:
+        airline:
+          type: string
+        airlineLogo:
+          type: string
+        origin:
+          type: string
+        travelDate:
+          type: string
+        returnDate:
+          type: string
+        seatsAvailable:
+          type: integer
+        price:
+          type: number
+        currency:
+          type: string
+        flightNumber:
+          type: string
+      required: [airline, origin, travelDate, returnDate, seatsAvailable, price, currency]
+
+    UmrahPackage:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        tier:
+          type: string
+          enum: [economy, vip, luxury]
+        hotel:
+          type: string
+        hotelStars:
+          type: integer
+        transport:
+          type: string
+        visaIncluded:
+          type: boolean
+        duration:
+          type: integer
+        price:
+          type: number
+        currency:
+          type: string
+        description:
+          type: string
+        amenities:
+          type: array
+          items:
+            type: string
+        image:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [active, inactive]
+        createdAt:
+          type: string
+      required: [id, name, tier, hotel, hotelStars, transport, visaIncluded, duration, price, currency, description, amenities, status, createdAt]
+
+    UmrahPackageInput:
+      type: object
+      properties:
+        name:
+          type: string
+        tier:
+          type: string
+          enum: [economy, vip, luxury]
+        hotel:
+          type: string
+        hotelStars:
+          type: integer
+        transport:
+          type: string
+        visaIncluded:
+          type: boolean
+        duration:
+          type: integer
+        price:
+          type: number
+        currency:
+          type: string
+        description:
+          type: string
+        amenities:
+          type: array
+          items:
+            type: string
+        image:
+          type: string
+      required: [name, tier, hotel, hotelStars, transport, visaIncluded, duration, price, currency, description, amenities]
+
+    Passenger:
+      type: object
+      properties:
+        title:
+          type: string
+          enum: [Mr, Mrs, Miss, Mstr]
+        givenName:
+          type: string
+        surname:
+          type: string
+        passportNumber:
+          type: string
+        dateOfBirth:
+          type: string
+        dateOfExpiry:
+          type: string
+        mobileNumber:
+          type: string
+        email:
+          type: string
+      required: [title, givenName, surname, passportNumber, dateOfBirth, dateOfExpiry, mobileNumber, email]
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+        bookingReference:
+          type: string
+        type:
+          type: string
+          enum: [group, umrah, package]
+        ticketId:
+          type: ["integer", "null"]
+        packageId:
+          type: ["integer", "null"]
+        agentId:
+          type: integer
+        agentName:
+          type: string
+        passengers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Passenger"
+        totalAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, approved, rejected, cancelled]
+        ticketDetails:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+      required: [id, bookingReference, type, agentId, agentName, passengers, totalAmount, status, createdAt]
+
+    BookingInput:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [group, umrah, package]
+        ticketId:
+          type: integer
+        packageId:
+          type: integer
+        passengers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Passenger"
+      required: [type, passengers]
+
+    BookingStatusUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, approved, rejected, cancelled]
+      required: [status]
+
+    LedgerSummary:
+      type: object
+      properties:
+        totalCredit:
+          type: number
+        totalDebit:
+          type: number
+        balance:
+          type: number
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transaction"
+      required: [totalCredit, totalDebit, balance, transactions]
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        agentId:
+          type: integer
+        agentName:
+          type: string
+        type:
+          type: string
+          enum: [credit, debit]
+        amount:
+          type: number
+        description:
+          type: string
+        bookingReference:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required: [id, agentId, agentName, type, amount, description, createdAt]
+
+    AdminDashboard:
+      type: object
+      properties:
+        totalAgents:
+          type: integer
+        pendingAgents:
+          type: integer
+        totalBookings:
+          type: integer
+        pendingBookings:
+          type: integer
+        totalRevenue:
+          type: number
+        monthlyBookings:
+          type: array
+          items:
+            type: object
+            properties:
+              month:
+                type: string
+              count:
+                type: integer
+              revenue:
+                type: number
+            required: [month, count, revenue]
+        bookingsByType:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              count:
+                type: integer
+            required: [type, count]
+        recentBookings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Booking"
+      required: [totalAgents, pendingAgents, totalBookings, pendingBookings, totalRevenue, monthlyBookings, bookingsByType, recentBookings]
+
+    ApprovalInput:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [approved, rejected]
+      required: [status]
+
+    TransactionInput:
+      type: object
+      properties:
+        agentId:
+          type: integer
+        type:
+          type: string
+          enum: [credit, debit]
+        amount:
+          type: number
+        description:
+          type: string
+        bookingReference:
+          type: string
+      required: [agentId, type, amount, description]
